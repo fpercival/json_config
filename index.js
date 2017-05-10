@@ -6,6 +6,7 @@ const extend = require('nodeutils').extend;
 const cfg = {};
 
 function Config(basepath, fileName){
+    let found=true;
     let configFile;
     let fname = fileName || 'config.json';
     let env = process.env.NODE_ENV || 'testing';
@@ -21,12 +22,16 @@ function Config(basepath, fileName){
         configFile = require(configFile);
     } else {
         configFile = {};
+        found = false;
     }
     if(configFile.env && configFile.env[env]){
         extend(configFile, configFile.env[env]);
         configFile.env = undefined;
     }
-    extend(cfg, configFile);
+    if(found){
+        extend(cfg, configFile);
+    }
+    return found;
 }
 
 cfg.init = Config;
