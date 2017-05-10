@@ -6,7 +6,7 @@ const extend = require('nodeutils').extend;
 const cfg = {};
 
 function Config(basepath, fileName){
-    let found=true;
+    let found=false;
     let configFile;
     let fname = fileName || 'config.json';
     let env = process.env.NODE_ENV || 'testing';
@@ -14,22 +14,17 @@ function Config(basepath, fileName){
     if(!path.isAbsolute(base)){
         base = path.resolve(base, '.' );
     }
-    configFile = path.join(base,  fname);
-    if(!fs.existsSync(configFile)){
-        configFile = path.join(base, 'default_'+fname);
-    }
+    configFile = path.join(base, 'default_'+fname);
     if(fs.existsSync(configFile)){
-        configFile = require(configFile);
-    } else {
-        configFile = {};
-        found = false;
+        extend(cfg, require(configFile));
     }
-    if(configFile.env && configFile.env[env]){
-        extend(configFile, configFile.env[env]);
-        configFile.env = undefined;
+    configFile = path.join(base, fname);
+    if(fs.existsSync(configFile)) {
+        extend(cfg, require(configFile));
     }
-    if(found){
-        extend(cfg, configFile);
+    if(cfg.env && cfg.env[env]){
+        extend(cfg, cfg.env[env]);
+        cfg.env = undefined;
     }
     return found;
 }
